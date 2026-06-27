@@ -23,6 +23,7 @@ from logging_setup import configure_logging
 from models.request import AdvisoryRequest
 from models.response import AdvisoryResponse
 from services.advisory import ServiceUnavailableError
+from services.topic_guardrail import classify_intake
 from streamlit_chat import (
     ChatMessage,
     build_problem_description,
@@ -295,6 +296,11 @@ def _build_advisory_request(user_message: str) -> AdvisoryRequest | str:
     # context is everything before it.
     prior_messages = cast(list[ChatMessage], list(st.session_state.chat_messages[:-1]))
     problem = build_problem_description(prior_messages, user_message)
+    # A message that is purely a greeting (on the first turn or mid-thread) gets a
+    # friendly welcome instead of being rejected by the minimum-length guard below.
+    intake = classify_intake(problem)
+    if intake.source == "greeting":
+        return intake.reason
     if len(problem.strip()) < 10:
         return "Please share at least 10 characters so I can help you properly."
     return AdvisoryRequest(

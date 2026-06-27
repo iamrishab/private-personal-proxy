@@ -47,13 +47,15 @@ def classify_intake(problem_description: str) -> TopicScopeResult:
     """Classify a message as a plain greeting or a normal question.
 
     Every non-greeting message is always treated as in-scope, since the
-    assistant answers questions on any topic. Greeting detection fires only on
-    the first turn: a casual "hi" mid-thread is a continuation, not a fresh
-    opener, so it is routed through the normal answer pipeline.
+    assistant answers questions on any topic. Greeting detection works on the
+    latest user turn only: the anchored pattern matches a message that is purely
+    a greeting and nothing else, so even a mid-thread "hi" gets a friendly reply
+    instead of incorrectly repeating the previous answer. A greeting carrying
+    real content (e.g. "hi, where does my lease end?") never matches and falls
+    through to the normal answer pipeline.
     """
     latest_normalized = extract_user_message_for_scope(problem_description).lower().strip()
-    is_multi_turn = "Conversation so far:" in problem_description
-    if not is_multi_turn and _GREETING_PATTERN.fullmatch(latest_normalized):
+    if _GREETING_PATTERN.fullmatch(latest_normalized):
         logger.info("Greeting detected; returning welcome response without pipeline")
         return TopicScopeResult(
             on_topic=True,
