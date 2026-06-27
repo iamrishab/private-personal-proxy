@@ -1,0 +1,74 @@
+default:
+  app:
+    host: "0.0.0.0"
+    port: 8000
+  llm:
+    # Chat model served by the local Ollama instance. Must support tool calling
+    # for the agentic-RAG flow. llama3.2:3b is small and fast; larger options
+    # (llama3.1:8b, qwen2.5:7b) trade speed for quality. Avoid non-tool models
+    # (e.g. gemma*) — they cannot drive the agent and may echo the prompt.
+    # Pull it first: `ollama pull llama3.2:3b`. Override with APP_LLM__MODEL.
+    model: llama3.2:3b
+    # Embedding model for RAG — nomic-embed-text has 8K context and runs fully on CPU.
+    embedding_model: nomic-embed-text:latest
+    # Ollama server URL; override with APP_OLLAMA__BASE_URL env var if non-default.
+    base_url: "http://localhost:11434"
+    # Hard ceiling (seconds) on any single Ollama HTTP call so a hung server
+    # cannot block a request or chat turn indefinitely.
+    request_timeout_seconds: 60
+    retry:
+      max_attempts: 3
+      min_wait_seconds: 1
+      max_wait_seconds: 8
+  rag:
+    chroma_persist_dir: data/chroma
+    retrieval_k: 5
+    # Cosine relevance score (1 - cosine_distance) cutoff. nomic-embed-text places
+    # genuinely relevant chunks around 0.4-0.8, so 0.3 keeps real matches while
+    # dropping noise. The CRAG retry relaxes this further when results are weak.
+    similarity_threshold: 0.3
+    chunk_size: 512
+    chunk_overlap: 77
+    user_docs_collection: user_docs
+    snippet_max_chars: 500
+    crag:
+      k_multiplier: 2
+      threshold_reduction: 0.2
+      min_threshold: 0.2
+  agent:
+    # Maximum number of agent turns before forcing answer synthesis, which caps
+    # the tool-calling loop so a misbehaving model cannot retrieve indefinitely.
+    max_tool_iterations: 5
+  advisory:
+    max_upload_bytes: 10485760
+    allowed_extensions:
+      - .pdf
+      - .docx
+      - .txt
+  resilience:
+    circuit_breaker:
+      failure_threshold: 3
+      timeout_seconds: 60
+    graph_retry:
+      retrieve:
+        max_attempts: 2
+        initial_interval: 0.5
+      analyze:
+        max_attempts: 3
+        initial_interval: 1.0
+  logging:
+    level: INFO
+  streamlit:
+    page_title: Private Docs Assistant
+    page_icon: "🔒"
+    chat_history_dir: data/chat_history
+
+streamlit:
+  rag:
+    chroma_persist_dir: /tmp/advisory/chroma
+  streamlit:
+    chat_history_dir: /tmp/advisory/chat_history
+
+testing:
+  rag:
+    chroma_persist_dir: /tmp/advisory-test/chroma

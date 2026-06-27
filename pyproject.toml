@@ -1,0 +1,81 @@
+[project]
+name = "advisory"
+version = "0.2.0"
+description = "Local, private question-answering assistant over your own documents"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "ollama>=0.4.0",
+    "pydantic>=2.10.0",
+    "dynaconf>=3.2.0",
+    "loguru>=0.7.2",
+    "tenacity>=9.0.0",
+    "python-dotenv>=1.0.0",
+    "langchain-core>=1.4.7",
+    "langchain-ollama>=0.3.0",
+    "langchain-text-splitters>=1.1.2",
+    "langgraph>=1.2.5",
+    "chromadb>=1.5.9",
+    "pypdf>=6.13.3",
+    "docx2txt>=0.9",
+    "python-multipart>=0.0.32",
+    "langchain-chroma>=1.1.0",
+    "streamlit>=1.40.0",
+]
+
+[project.scripts]
+advisory = "main:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src" = ""
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src"]
+
+[tool.hatch.build.targets.sdist.sources]
+"src" = ""
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+    "integration: marks tests that require a live Ollama server",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+packages = [
+    "api", "bootstrap", "config", "graph", "logging_setup",
+    "main", "models", "observability", "prompts", "rag",
+    "services", "streamlit_chat", "streamlit_chat_history",
+]

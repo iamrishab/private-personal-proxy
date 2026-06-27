@@ -1,0 +1,44 @@
+.env
+config/.secrets.yaml
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+data/chat_history/
+data/chroma/
+.specstory/
+# Temporary files
+*.tmp
+*.swp
+*.bak
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# macOS system files
+.DS_Store
+
+# VSCode settings
+.vscode/
+
+# Logs
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+!.gitignore
+.cursor
+.cursorignore
+.cursorindexingignore
+
+.streamlit
+
+tests/
